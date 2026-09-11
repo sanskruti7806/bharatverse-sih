@@ -4,144 +4,360 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGameStore } from "@/store/gameState";
 import { useRouter } from "next/navigation";
-import { ShieldAlert, Key, ScrollText } from "lucide-react";
+import { CheckCircle2, ChevronRight, SkipForward } from "lucide-react";
+import NalandaMap from "@/components/quest/NalandaMap";
+import ScholarChallenge from "@/components/quest/ScholarChallenge";
+import ManuscriptHunt from "@/components/quest/ManuscriptHunt";
+import CulturalDecision from "@/components/quest/CulturalDecision";
+import FinalSynthesisChallenge from "@/components/quest/FinalSynthesisChallenge";
+import QuestComplete from "@/components/quest/QuestComplete";
+import DiscoveryReveal from "@/components/game/DiscoveryReveal";
 
-export default function NalandaQuest() {
+export default function NalandaQuestPage() {
   const router = useRouter();
-  const { addToInventory, updateDNA } = useGameStore();
-  const [step, setStep] = useState(0); // 0: Portal, 1: Escape Room 1, 2: Decision, 3: Reward
+  const { completeQuest, setFlyToTarget } = useGameStore();
 
+  const [currentStep, setCurrentStep] = useState(0);
+  const [totalScore, setTotalScore] = useState(0);
+  const [chosenCurriculum, setChosenCurriculum] = useState<string>("astronomy");
+  const [showDiscoveryModal, setShowDiscoveryModal] = useState(false);
+
+  // Time portal auto-transition (5s)
   useEffect(() => {
-    if (step === 0) {
-      setTimeout(() => setStep(1), 5000); // Portal sequence duration
+    if (currentStep === 0) {
+      const timer = setTimeout(() => {
+        setCurrentStep(1);
+      }, 5500);
+      return () => clearTimeout(timer);
     }
-  }, [step]);
+  }, [currentStep]);
 
-  const handleSolvePuzzle = () => {
-    updateDNA('mathematics', 15);
-    updateDNA('strategy', 10);
-    setStep(2);
+  const questSteps = [
+    { num: "01", label: "ARRIVE", stepIndex: 1 },
+    { num: "02", label: "EXPLORE", stepIndex: 2 },
+    { num: "03", label: "SCHOLAR", stepIndex: 3 },
+    { num: "04", label: "INVESTIGATE", stepIndex: 4 },
+    { num: "05", label: "DECIDE", stepIndex: 5 },
+    { num: "06", label: "DISCOVER", stepIndex: 6 },
+  ];
+
+  const handleScholarSolved = (pts: number) => {
+    setTotalScore((prev) => prev + pts);
+    setCurrentStep(4);
   };
 
-  const handleDecision = (choice: string) => {
-    if (choice === 'astronomy') {
-      updateDNA('history', 20);
-      updateDNA('geography', 15);
-    } else {
-      updateDNA('arts', 20);
-      updateDNA('architecture', 15);
-    }
-    
-    addToInventory({
-      id: `nalanda_manuscript_${Date.now()}`,
-      name: choice === 'astronomy' ? 'Aryabhatiya Scroll' : 'Natyashastra Folio',
-      category: 'knowledge',
-      icon: '📜',
-      isPlaced: false
+  const handleManuscriptSolved = (pts: number) => {
+    setTotalScore((prev) => prev + pts);
+    setCurrentStep(5);
+  };
+
+  const handleDecisionMade = (choice: string, pts: number) => {
+    setChosenCurriculum(choice);
+    setTotalScore((prev) => prev + pts);
+    setCurrentStep(6);
+  };
+
+  const handleSynthesisSolved = (pts: number) => {
+    setTotalScore((prev) => prev + pts);
+    setCurrentStep(7);
+  };
+
+  const handleTriggerAddToBharat = () => {
+    // Commit rewards and state to authoritative store
+    const item = {
+      id: "nalanda_token",
+      name: "Nalanda Mahavihara",
+      icon: "🏛️",
+      category: "monument" as const,
+      rarity: "Legendary" as const,
+      era: "Classical India (5th - 12th Century CE)",
+      source: "Quest: The Lost Library of Nalanda",
+      description: "The premier residential university of the ancient world. Fosters philosophical debate, mathematical science, and global knowledge exchange.",
+      historicalContext: "Founded under the Gupta dynasty, Nalanda attracted students from China, Korea, Japan, Tibet, and Central Asia.",
+      tags: ["Education", "Logic", "Architecture", "Magadha"],
+      placeable: true,
+      isPlaced: false,
+      targetSlotId: "magadha",
+    };
+
+    const badge = {
+      id: "badge_nalanda_scholar",
+      name: "Nalanda Scholar",
+      icon: "🎖️",
+      description: "Passed the rigorous Dwarapala test and recovered classical treatises in the Dharmaganja.",
+      category: "Academic",
+      earnedAt: new Date().toLocaleDateString(),
+    };
+
+    const curriculumDNA =
+      chosenCurriculum === "arts"
+        ? { arts: 30, architecture: 20, history: 15, strategy: 15 }
+        : chosenCurriculum === "medicine"
+        ? { science: 30, history: 20, mathematics: 15, strategy: 15 }
+        : { mathematics: 30, history: 20, architecture: 15, strategy: 15 };
+
+    completeQuest("nalanda", {
+      xp: 450,
+      dnaDeltas: curriculumDNA,
+      badge,
+      item,
     });
-    setStep(3);
+
+    // Open Discovery Reveal overlay
+    setShowDiscoveryModal(true);
   };
 
-  const finishQuest = () => {
+  const handleFinalConfirmReturn = () => {
+    setShowDiscoveryModal(false);
+    // Set fly to target coords for Bihar / Nalanda: [25.1333, 85.4419]
+    setFlyToTarget([25.1333, 85.4419]);
     router.push("/");
   };
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden relative">
-      <AnimatePresence mode="wait">
-        {step === 0 && (
-          <motion.div 
+    <div className="min-h-screen bg-earth-950 text-parchment-100 flex flex-col justify-between selection:bg-gold-500/40 relative overflow-x-hidden">
+      {/* Step 0: Cinematic Time Portal */}
+      <AnimatePresence>
+        {currentStep === 0 && (
+          <motion.div
             key="portal"
-            initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1.5 }} exit={{ opacity: 0, scale: 3 }}
-            transition={{ duration: 5, ease: "easeInOut" }}
-            className="absolute inset-0 flex items-center justify-center flex-col"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[600] bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden"
           >
-            <div className="w-[150vw] h-[150vw] rounded-full bg-[conic-gradient(var(--tw-gradient-stops))] from-gold-500 via-transparent to-gold-500 animate-[spin_2s_linear_infinite] opacity-60 blur-2xl absolute mix-blend-screen"></div>
-            <div className="w-[80vw] h-[80vw] rounded-full bg-[conic-gradient(var(--tw-gradient-stops))] from-blue-500 via-transparent to-purple-500 animate-[spin_1.5s_linear_infinite_reverse] opacity-40 blur-xl absolute mix-blend-screen"></div>
-            
-            <h1 className="font-serif text-6xl md:text-9xl text-transparent bg-clip-text bg-gradient-to-b from-white to-gold-500 z-10 drop-shadow-[0_0_40px_rgba(212,175,55,1)] font-bold tracking-[0.3em] uppercase mb-8">
-              Time Portal
-            </h1>
-            <p className="text-3xl mt-4 text-gold-300 z-10 tracking-[0.5em] font-mono animate-pulse">CALIBRATING: 5TH CENTURY CE</p>
-          </motion.div>
-        )}
+            {/* Hyperspace Time-folding rings */}
+            <div className="absolute w-[180vw] h-[180vw] max-w-[1200px] max-h-[1200px] rounded-full border border-gold-500/20 animate-[spin_30s_linear_infinite]" />
+            <div className="absolute w-[140vw] h-[140vw] max-w-[900px] max-h-[900px] rounded-full border-2 border-dashed border-gold-400/30 animate-[spin_20s_linear_infinite_reverse]" />
+            <div className="absolute w-[90vw] h-[90vw] max-w-[600px] max-h-[600px] rounded-full bg-[radial-gradient(circle,_rgba(212,175,55,0.15)_0%,_transparent_70%)] blur-2xl" />
 
-        {step === 1 && (
-          <motion.div key="puzzle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="absolute inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/4/4b/Nalanda_University_Ruins.jpg')] bg-cover bg-center">
-            <div className="absolute inset-0 bg-earth-900/85 backdrop-blur-md"></div>
-            <div className="absolute inset-0 flex items-center justify-center p-6">
-              <div className="bg-parchment-100 text-earth-900 max-w-3xl w-full rounded-3xl p-10 border-[6px] border-gold-500 shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('/mandala.svg')] opacity-5 pointer-events-none"></div>
-                
-                <div className="flex items-center gap-3 mb-8 text-terracotta-600 font-bold uppercase tracking-widest text-sm border-b-2 border-parchment-300 pb-4 relative z-10">
-                  <ShieldAlert className="w-6 h-6" /> Escape Room: The Dwarapala's Test
-                </div>
-                <h2 className="font-serif text-5xl mb-6 relative z-10">The Gatekeeper's Riddle</h2>
-                <p className="text-xl leading-relaxed mb-10 text-earth-700 font-medium relative z-10">
-                  You stand before the grand entrance of Nalanda Mahavihara. The Dwarapala (gatekeeper scholar) blocks your path. 
-                  "To enter, you must understand the rhythm of the universe. In Pingala's Chandaḥśāstra, what mathematical sequence describes the combinations of short and long syllables?"
-                </p>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
-                  <button onClick={() => alert("Incorrect. The gates remain closed.")} className="p-6 border-2 border-parchment-300 rounded-2xl hover:bg-red-50 hover:border-red-400 transition-all font-bold text-lg shadow-sm">The Pythagorean Sequence</button>
-                  <button onClick={handleSolvePuzzle} className="p-6 border-2 border-gold-500 bg-gold-50 rounded-2xl hover:bg-gold-500 hover:text-earth-900 transition-all font-bold text-lg flex items-center justify-between shadow-md hover:shadow-lg group">
-                    The Hemachandra (Fibonacci) Sequence <Key className="w-6 h-6 text-gold-600 group-hover:text-earth-900" />
-                  </button>
-                  <button onClick={() => alert("Incorrect. The gates remain closed.")} className="p-6 border-2 border-parchment-300 rounded-2xl hover:bg-red-50 hover:border-red-400 transition-all font-bold text-lg shadow-sm">The Vedic Square</button>
-                  <button onClick={() => alert("Incorrect. The gates remain closed.")} className="p-6 border-2 border-parchment-300 rounded-2xl hover:bg-red-50 hover:border-red-400 transition-all font-bold text-lg shadow-sm">The Golden Ratio</button>
-                </div>
+            {/* Content */}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 1.2 }}
+              className="relative z-10 max-w-lg space-y-4"
+            >
+              <div className="text-gold-400 font-mono text-xs tracking-[0.4em] uppercase">
+                Temporal Translation Active
               </div>
-            </div>
-          </motion.div>
-        )}
-
-        {step === 2 && (
-          <motion.div key="decision" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="absolute inset-0 bg-earth-950 flex items-center justify-center p-6">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-terracotta-900/40 to-transparent animate-pulse"></div>
-            <div className="bg-parchment-100 text-earth-900 max-w-3xl w-full rounded-3xl p-10 border-[6px] border-terracotta-500 shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative z-10 overflow-hidden">
-              <div className="flex items-center gap-3 mb-8 text-terracotta-600 font-bold uppercase tracking-widest text-sm border-b-2 border-parchment-300 pb-4">
-                <ShieldAlert className="w-6 h-6" /> Critical Point
+              <h1 className="font-serif text-5xl sm:text-7xl text-transparent bg-clip-text bg-gradient-to-b from-white via-gold-200 to-gold-500 font-bold tracking-widest uppercase drop-shadow-[0_0_30px_rgba(212,175,55,0.8)]">
+                Time Portal
+              </h1>
+              <div className="py-2 px-6 rounded-full bg-earth-900/80 border border-gold-500/40 inline-block font-mono text-sm text-gold-300">
+                Destination: NALANDA · Era: 7th Century CE
               </div>
-              <h2 className="font-serif text-5xl mb-6">The Burning Library</h2>
-              <p className="text-xl leading-relaxed mb-10 text-earth-700 font-medium">
-                You have reached the Dharmaganja library, but time is collapsing. You can only save one critical text to bring back to your Living Board. This choice will permanently alter your Heritage DNA profile.
+              <p className="text-parchment-300/80 text-sm italic font-serif">
+                &ldquo;Folding centuries of recorded memory into living experience...&rdquo;
               </p>
-              
-              <div className="space-y-6">
-                <button onClick={() => handleDecision('astronomy')} className="w-full p-6 border-2 border-gold-500/50 bg-white rounded-2xl hover:bg-gold-50 hover:border-gold-500 transition-all text-left flex gap-6 items-center shadow-md hover:shadow-lg group">
-                  <div className="text-5xl bg-parchment-200 p-4 rounded-xl group-hover:scale-110 transition-transform">🔭</div>
-                  <div>
-                    <h3 className="font-serif font-bold text-3xl mb-2 text-earth-900">Aryabhatiya</h3>
-                    <p className="text-earth-600 text-lg font-medium">Boosts History & Mathematics DNA. Focuses your board on science routes.</p>
-                  </div>
-                </button>
-                <button onClick={() => handleDecision('arts')} className="w-full p-6 border-2 border-gold-500/50 bg-white rounded-2xl hover:bg-gold-50 hover:border-gold-500 transition-all text-left flex gap-6 items-center shadow-md hover:shadow-lg group">
-                  <div className="text-5xl bg-parchment-200 p-4 rounded-xl group-hover:scale-110 transition-transform">🎭</div>
-                  <div>
-                    <h3 className="font-serif font-bold text-3xl mb-2 text-earth-900">Natyashastra</h3>
-                    <p className="text-earth-600 text-lg font-medium">Boosts Arts & Architecture DNA. Focuses your board on cultural nodes.</p>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
+            </motion.div>
 
-        {step === 3 && (
-          <motion.div key="reward" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-0 bg-black flex items-center justify-center p-6 flex-col">
-            <div className="absolute inset-0 bg-[url('/mandala.svg')] opacity-30 animate-[spin_60s_linear_infinite]"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gold-900/50 to-transparent"></div>
-            
-            <ScrollText className="w-40 h-40 text-gold-500 mb-10 drop-shadow-[0_0_50px_rgba(212,175,55,1)] animate-bounce relative z-10" />
-            <h1 className="font-serif text-6xl md:text-8xl text-white mb-6 text-center relative z-10 drop-shadow-2xl">Discovery Unlocked</h1>
-            <p className="text-3xl text-gold-300 mb-16 relative z-10 font-bold tracking-wide">New Knowledge Token added to your Heritage Chest!</p>
-            
-            <button onClick={finishQuest} className="bg-gradient-to-b from-gold-400 to-gold-600 text-earth-900 px-16 py-6 rounded-full font-bold text-2xl hover:scale-105 transition-transform shadow-[0_0_50px_rgba(212,175,55,0.8)] z-10 border-2 border-white/40 uppercase tracking-widest">
-              Return to Living Board
+            {/* Skip Button */}
+            <button
+              onClick={() => setCurrentStep(1)}
+              className="absolute bottom-10 right-10 text-xs font-mono tracking-widest text-parchment-300 hover:text-gold-300 flex items-center gap-1.5 z-20 bg-earth-900/60 px-4 py-2 rounded-xl border border-white/10 hover:border-gold-500/50 transition-all"
+            >
+              <span>Skip Sequence</span>
+              <SkipForward className="w-3.5 h-3.5" />
             </button>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Persistent Quest Progress Header (Visible Steps 1-7) */}
+      {currentStep > 0 && (
+        <header className="sticky top-0 z-40 bg-earth-900/95 backdrop-blur-md border-b border-gold-500/30 px-4 py-3 shadow-lg">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <div className="text-[10px] uppercase font-bold tracking-[0.25em] text-gold-400">
+                Active Expedition
+              </div>
+              <h1 className="font-serif text-xl sm:text-2xl text-parchment-100 font-bold tracking-wide">
+                The Lost Library of Nalanda
+              </h1>
+            </div>
+
+            {/* Stepper Dots / Badges */}
+            <nav className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0">
+              {questSteps.map((step) => {
+                const isCompleted = currentStep > step.stepIndex;
+                const isCurrent = currentStep === step.stepIndex;
+
+                return (
+                  <div
+                    key={step.num}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-mono whitespace-nowrap transition-all ${
+                      isCurrent
+                        ? "bg-gold-500 text-earth-950 font-bold shadow-[0_0_15px_rgba(212,175,55,0.6)]"
+                        : isCompleted
+                        ? "bg-earth-800 text-gold-400 border border-gold-500/40"
+                        : "bg-earth-950/60 text-parchment-400/50 border border-white/5"
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <CheckCircle2 className="w-3 h-3 text-gold-400" />
+                    ) : (
+                      <span>{step.num}</span>
+                    )}
+                    <span>{step.label}</span>
+                  </div>
+                );
+              })}
+            </nav>
+          </div>
+        </header>
+      )}
+
+      {/* Main Quest Content Container */}
+      <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 flex items-center justify-center my-auto">
+        <AnimatePresence mode="wait">
+          {/* Step 1: Nalanda Arrival Briefing */}
+          {currentStep === 1 && (
+            <motion.div
+              key="arrival"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="max-w-3xl w-full bg-parchment-100 text-earth-900 rounded-3xl p-8 sm:p-12 border-2 border-gold-500 shadow-2xl relative overflow-hidden"
+            >
+              <div className="absolute inset-0 opacity-5 bg-[url('/mandala.svg')] bg-center bg-no-repeat pointer-events-none" />
+
+              <div className="text-xs font-bold tracking-widest text-terracotta-600 uppercase mb-2">
+                Ancient Magadha · 650 CE
+              </div>
+              <h2 className="font-serif text-3xl sm:text-5xl font-bold mb-4">
+                Arrival at the Mahavihara
+              </h2>
+              <p className="text-earth-800 text-base sm:text-lg leading-relaxed mb-6 font-medium">
+                You step through the southern mist onto the red baked-brick paths of Nalanda. Ahead rise the nine storeys of the <em>Dharmaganja</em> library towers, reflecting the afternoon sun. Hundreds of monks and scholars from across Asia pace the stone courtyards in deep debate.
+              </p>
+
+              <div className="p-4 bg-parchment-200/90 rounded-2xl border border-parchment-300 mb-8 space-y-2 text-sm text-earth-900">
+                <div className="font-bold text-xs uppercase tracking-wider text-earth-700">Mission Objectives:</div>
+                <ul className="space-y-1.5 text-xs sm:text-sm list-disc list-inside">
+                  <li>Survey the campus sectors to understand institutional layout.</li>
+                  <li>Pass the Dwarapala entrance riddle on poetic mathematics.</li>
+                  <li>Recover the misplaced palm-leaf philosophical treatise.</li>
+                  <li>Make a strategic preservation choice for the library&apos;s copyists.</li>
+                </ul>
+              </div>
+
+              <button
+                onClick={() => setCurrentStep(2)}
+                className="w-full py-4 px-8 rounded-2xl bg-gradient-to-r from-gold-500 to-gold-600 text-earth-950 font-serif font-bold text-sm uppercase tracking-widest shadow-lg hover:brightness-110 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+              >
+                <span>Enter Campus Survey</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </motion.div>
+          )}
+
+          {/* Step 2: Campus Map Exploration */}
+          {currentStep === 2 && (
+            <motion.div
+              key="map"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="w-full"
+            >
+              <NalandaMap onComplete={() => setCurrentStep(3)} />
+            </motion.div>
+          )}
+
+          {/* Step 3: Scholar Challenge */}
+          {currentStep === 3 && (
+            <motion.div
+              key="scholar"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="w-full"
+            >
+              <ScholarChallenge onComplete={handleScholarSolved} />
+            </motion.div>
+          )}
+
+          {/* Step 4: Manuscript Hunt */}
+          {currentStep === 4 && (
+            <motion.div
+              key="hunt"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="w-full"
+            >
+              <ManuscriptHunt onComplete={handleManuscriptSolved} />
+            </motion.div>
+          )}
+
+          {/* Step 5: Cultural Decision */}
+          {currentStep === 5 && (
+            <motion.div
+              key="decision"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="w-full"
+            >
+              <CulturalDecision onComplete={handleDecisionMade} />
+            </motion.div>
+          )}
+
+          {/* Step 6: Final Synthesis Challenge */}
+          {currentStep === 6 && (
+            <motion.div
+              key="synthesis"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="w-full"
+            >
+              <FinalSynthesisChallenge onComplete={handleSynthesisSolved} />
+            </motion.div>
+          )}
+
+          {/* Step 7: Quest Complete */}
+          {currentStep === 7 && (
+            <motion.div
+              key="complete"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="w-full"
+            >
+              <QuestComplete
+                score={totalScore || 450}
+                onAddToBharat={handleTriggerAddToBharat}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+
+      {/* Discovery Reveal Modal for Nalanda */}
+      <DiscoveryReveal
+        isOpen={showDiscoveryModal}
+        title="NALANDA MAHAVIHARA"
+        subtitle="Center of Classical Learning"
+        category="Monument / University"
+        rarity="Legendary"
+        icon="🏛️"
+        description="You have fully reconstructed the foundational knowledge of Nalanda. The ancient university token is now yours to physically place on your Living India Board."
+        historicalContext="Operating from 427 to 1197 CE in Magadha, Nalanda was the world's first great residential university, sheltering thousands of masters of logic, mathematics, astronomy, and medicine."
+        rewards={{
+          xp: 450,
+          badge: "Nalanda Scholar",
+          dna: [
+            { trait: "History", value: 25 },
+            { trait: "Mathematics", value: 25 },
+            { trait: "Architecture", value: 20 },
+          ],
+        }}
+        tags={["Magadha", "Dharmaganja", "Tala-Patra", "Knowledge Hub"]}
+        ctaLabel="RETURN TO LIVING INDIA"
+        onConfirm={handleFinalConfirmReturn}
+      />
     </div>
   );
 }

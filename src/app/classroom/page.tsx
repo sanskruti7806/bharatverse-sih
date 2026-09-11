@@ -87,7 +87,7 @@ export default function ClassroomMode() {
               <div className="mt-10 pt-6 border-t border-parchment-300 bg-blue-50/50 p-4 rounded-xl border border-blue-200/50">
                 <p className="text-sm text-blue-900 font-medium flex gap-3">
                   <BrainCircuit className="w-5 h-5 flex-shrink-0 text-blue-600" />
-                  <span>AI Recommendation: Assign the "Map of Janapadas" quest to improve geographical understanding across the class.</span>
+                  <span>AI Recommendation: Assign the &ldquo;Map of Janapadas&rdquo; quest to improve geographical understanding across the class.</span>
                 </p>
               </div>
             </Card>
