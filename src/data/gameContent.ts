@@ -87,7 +87,7 @@ export const CITIES_DATA: City[] = [
     description: "The grand seat of the Mauryan and Gupta empires, renowned for palatial woodwork, royal edicts, and the great assemblies of scholars.",
     artwork: "🏛️",
     requiredStars: 0, // Unlocked from start
-    coordinates: { x: 62, y: 38 },
+    coordinates: { x: 61, y: 46.5 },
     region: "Magadha (Bihar)",
     era: "4th Century BCE - 5th Century CE",
     chapters: [
@@ -370,7 +370,7 @@ export const CITIES_DATA: City[] = [
     description: "The magnificent capital of the Vijayanagara Empire with monolithic granite temples, aqueducts, and international bazaar pavilions.",
     artwork: "🛕",
     requiredStars: 6, // Global threshold: unlocked once player reaches 6 total stars
-    coordinates: { x: 38, y: 72 },
+    coordinates: { x: 41.5, y: 68 },
     region: "Ballari (Karnataka)",
     era: "14th - 16th Century CE",
     chapters: [
@@ -696,7 +696,7 @@ export const CITIES_DATA: City[] = [
     description: "One of the oldest continuously inhabited cities on Earth, where philosophical schools, silk weavers, and sacred ghats meet the holy Ganga.",
     artwork: "🕉️",
     requiredStars: 15, // Threshold: 15 global stars
-    coordinates: { x: 55, y: 44 },
+    coordinates: { x: 53.5, y: 45.5 },
     region: "Kashi (Uttar Pradesh)",
     era: "Ancient to Modern",
     chapters: [
@@ -979,7 +979,7 @@ export const CITIES_DATA: City[] = [
     description: "The ancient Pandya capital laid out like a blooming lotus around the soaring Gopurams of the Meenakshi Sundareswarar Temple.",
     artwork: "🌸",
     requiredStars: 25, // Threshold: 25 global stars
-    coordinates: { x: 44, y: 88 },
+    coordinates: { x: 47, y: 84 },
     region: "Tamil Nadu",
     era: "3rd Century BCE - 17th Century CE",
     chapters: [
@@ -1262,7 +1262,7 @@ export const CITIES_DATA: City[] = [
     description: "The 13th-century architectural marvel on the shores of the Bay of Bengal, conceived as Surya's colossal stone chariot with 24 carved wheels.",
     artwork: "☀️",
     requiredStars: 40, // Threshold: 40 global stars
-    coordinates: { x: 68, y: 56 },
+    coordinates: { x: 59, y: 62 },
     region: "Puri (Odisha)",
     era: "13th Century CE",
     chapters: [

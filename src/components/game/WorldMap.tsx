@@ -7,7 +7,8 @@ import { CITIES_DATA, City } from "@/data/gameContent";
 import CityVerticalCard from "./CityVerticalCard";
 import CityNode from "./CityNode";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, X, LayoutGrid, Map as MapIcon, ChevronLeft, ChevronRight, Star, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { Lock, X, LayoutGrid, Map as MapIcon, ChevronLeft, ChevronRight, Star, Sparkles, Compass } from "lucide-react";
 
 export default function WorldMap() {
   const mounted = useMounted();
@@ -183,98 +184,57 @@ export default function WorldMap() {
             </div>
           </div>
         ) : (
-          /* ── CONSTELLATION ATLAS VIEW ── */
-          <div className="relative w-full h-[620px] sm:h-[680px]">
-            {/* Ancient Connecting Routes (SVG) */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
-              <defs>
-                <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="rgba(212, 175, 55, 0.5)" />
-                  <stop offset="50%" stopColor="rgba(212, 175, 55, 0.8)" />
-                  <stop offset="100%" stopColor="rgba(212, 175, 55, 0.3)" />
-                </linearGradient>
-              </defs>
-
-              {/* Route: Varanasi (55%, 44%) <-> Pataliputra (62%, 38%) */}
-              <line
-                x1="55%"
-                y1="44%"
-                x2="62%"
-                y2="38%"
-                stroke="url(#routeGradient)"
-                strokeWidth="2"
-                strokeDasharray="6 6"
-                className="animate-pulse"
+          /* ── HISTORICAL ERA ATLAS VIEW ── */
+          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="relative w-full aspect-[16/9] min-h-[440px] sm:min-h-[560px] md:min-h-[620px] rounded-3xl overflow-hidden border-2 border-gold-500/50 shadow-[0_0_50px_rgba(0,0,0,0.9)] bg-[#1e140d]">
+              {/* Authentic Historical Era Map of Ancient Bharat */}
+              <Image
+                src="/ancient_india_map.jpg"
+                alt="Ancient Map of Bharat (Jambudvipa)"
+                fill
+                priority
+                sizes="(max-width: 1200px) 100vw, 1200px"
+                className="object-cover object-center select-none pointer-events-none filter contrast-105 brightness-95"
               />
 
-              {/* Route: Pataliputra (62%, 38%) <-> Konark (68%, 56%) */}
-              <line
-                x1="62%"
-                y1="38%"
-                x2="68%"
-                y2="56%"
-                stroke="url(#routeGradient)"
-                strokeWidth="2"
-                strokeDasharray="6 6"
-              />
+              {/* Antique parchment vignette overlay to harmonize with game theme */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/35 pointer-events-none" />
+              <div className="absolute inset-0 shadow-[inset_0_0_80px_rgba(0,0,0,0.85)] pointer-events-none" />
 
-              {/* Route: Varanasi (55%, 44%) <-> Hampi (38%, 72%) */}
-              <line
-                x1="55%"
-                y1="44%"
-                x2="38%"
-                y2="72%"
-                stroke="url(#routeGradient)"
-                strokeWidth="2"
-                strokeDasharray="6 6"
-              />
+              {/* Antique Cartouche Info Badge */}
+              <div className="absolute top-4 left-4 z-20 pointer-events-none hidden sm:flex items-center gap-2 bg-earth-950/85 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-gold-500/40 text-[11px] font-mono text-gold-300 shadow-md">
+                <Compass className="w-3.5 h-3.5 text-gold-400" />
+                <span>प्राचीन जम्बूद्वीप · Classical Cartography</span>
+              </div>
 
-              {/* Route: Hampi (38%, 72%) <-> Madurai (44%, 88%) */}
-              <line
-                x1="38%"
-                y1="72%"
-                x2="44%"
-                y2="88%"
-                stroke="url(#routeGradient)"
-                strokeWidth="2"
-                strokeDasharray="6 6"
-              />
+              {/* Interactive Specific Location Pins for all cities (No interlinking lines) */}
+              <div className="absolute inset-0">
+                {CITIES_DATA.map((city) => {
+                  const unlocked = isCityUnlocked(city.id);
+                  const starsEarned = city.chapters.reduce((acc, ch) => {
+                    const p = chapterProgress[ch.id];
+                    return acc + (p?.completed ? p.stars : 0);
+                  }, 0);
+                  const maxStars = city.chapters.length * 3;
 
-              {/* Route: Konark (68%, 56%) <-> Madurai (44%, 88%) */}
-              <line
-                x1="68%"
-                y1="56%"
-                x2="44%"
-                y2="88%"
-                stroke="url(#routeGradient)"
-                strokeWidth="1.5"
-                strokeDasharray="4 8"
-                opacity="0.5"
-              />
-            </svg>
+                  return (
+                    <CityNode
+                      key={city.id}
+                      city={city}
+                      isUnlocked={unlocked}
+                      starsEarned={starsEarned}
+                      maxStars={maxStars}
+                      onSelect={() => handleSelectCity(city)}
+                      onLockedClick={handleLockedCity}
+                    />
+                  );
+                })}
+              </div>
+            </div>
 
-            {/* Map Interactive Nodes Container */}
-            <div className="absolute inset-0">
-              {CITIES_DATA.map((city) => {
-                const unlocked = isCityUnlocked(city.id);
-                const starsEarned = city.chapters.reduce((acc, ch) => {
-                  const p = chapterProgress[ch.id];
-                  return acc + (p?.completed ? p.stars : 0);
-                }, 0);
-                const maxStars = city.chapters.length * 3;
-
-                return (
-                  <CityNode
-                    key={city.id}
-                    city={city}
-                    isUnlocked={unlocked}
-                    starsEarned={starsEarned}
-                    maxStars={maxStars}
-                    onSelect={() => handleSelectCity(city)}
-                    onLockedClick={handleLockedCity}
-                  />
-                );
-              })}
+            {/* Atlas Map Subtitle & Interaction Hint */}
+            <div className="flex justify-center items-center gap-2 text-[11px] font-mono text-parchment-400/80 pt-2 text-center">
+              <span>Historical Cartography of Ancient Bharat · Select any realm marker to travel to its locations</span>
             </div>
           </div>
         )}
