@@ -160,7 +160,7 @@ export default function LivingBoard() {
         {/* Tile Layer: OpenStreetMap styled with rich cartographic antique dark parchment palette */}
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="&copy; OpenStreetMap contributors | BharatVerse Cartography"
+          attribution="&copy; OpenStreetMap contributors | DHARA Cartography"
           className="map-tiles-manuscript-theme"
         />
 

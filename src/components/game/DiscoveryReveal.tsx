@@ -39,12 +39,13 @@ export default function DiscoveryReveal({
 }: DiscoveryRevealProps) {
   if (!isOpen) return null;
 
-  const rarityColor = {
+  const rarityMap: Record<ItemRarity, string> = {
     Common: "from-stone-400 to-stone-600 border-stone-400 text-stone-200",
     Rare: "from-blue-500 to-indigo-700 border-blue-400 text-blue-200",
     Epic: "from-purple-500 to-indigo-800 border-purple-400 text-purple-200",
     Legendary: "from-gold-400 to-gold-600 border-gold-400 text-gold-200",
-  }[rarity];
+  };
+  const rarityColor = rarityMap[rarity] || rarityMap.Rare;
 
   return (
     <AnimatePresence>

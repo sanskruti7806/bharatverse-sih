@@ -66,3 +66,9 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(212, 175, 55, 0.7);
 }
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: 1000;
+  }
+}

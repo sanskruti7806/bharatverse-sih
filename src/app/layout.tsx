@@ -13,8 +13,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "BharatVerse - India's civilization, experienced",
-  description: "An interactive AI-powered journey through India's civilization, heritage and cultural knowledge.",
+  title: "DHARA - Where India's stories flow",
+  description: "Digital Heritage Adventure & Recreation Architecture",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

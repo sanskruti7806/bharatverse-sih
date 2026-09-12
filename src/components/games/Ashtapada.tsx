@@ -128,7 +128,7 @@ export default function Ashtapada() {
           </h2>
         </div>
         <div className="text-[11px] font-mono text-earth-700 bg-parchment-200 px-3 py-1.5 rounded-xl border border-parchment-300 self-start sm:self-auto">
-          BharatVerse Gameplay Adaptation
+          DHARA Gameplay Adaptation
         </div>
       </div>
 
