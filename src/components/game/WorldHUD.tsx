@@ -1,16 +1,30 @@
 "use client";
 
+import { useState } from "react";
 import { useMounted } from "@/hooks/useMounted";
 import { useGameStore } from "@/store/gameState";
+import { CITIES_DATA } from "@/data/gameContent";
 import { motion, AnimatePresence } from "framer-motion";
-import { Compass, Star, Trophy, User, Settings as SettingsIcon, Award } from "lucide-react";
+import { Compass, Star, Trophy, User, Settings as SettingsIcon, Award, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import PassportModal from "./PassportModal";
 
 export default function WorldHUD() {
   const mounted = useMounted();
-  const { player, getTotalStars, enterCity, enterChapter, currentCityId, levelUpNotification, dismissLevelUp } = useGameStore();
+  const [showPassport, setShowPassport] = useState(false);
+  const {
+    player,
+    getTotalStars,
+    enterCity,
+    enterChapter,
+    currentCityId,
+    levelUpNotification,
+    dismissLevelUp,
+    getUnlockedPassportsCount,
+  } = useGameStore();
 
   const totalStars = mounted ? getTotalStars() : 0;
+  const unlockedPassportsCount = mounted ? getUnlockedPassportsCount() : 0;
   const xp = mounted ? player.xp : 0;
   const level = mounted ? player.level : 1;
   const title = mounted ? player.title : "Seeker of Bharat";
@@ -57,7 +71,7 @@ export default function WorldHUD() {
         </div>
 
         {/* Player Status Center / Right */}
-        <div className="flex items-center gap-2.5 sm:gap-4 pointer-events-auto">
+        <div className="flex items-center gap-2 sm:gap-3.5 pointer-events-auto">
           
           {/* Global Stars Currency */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-earth-950/80 border border-gold-500/40 text-gold-300 shadow-md backdrop-blur-md">
@@ -72,8 +86,28 @@ export default function WorldHUD() {
             </div>
           </div>
 
+          {/* Heritage Passports Section (Right beside Star Counter) */}
+          <button
+            onClick={() => setShowPassport(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-earth-950/80 border border-gold-500/40 hover:border-gold-400 text-gold-300 shadow-md backdrop-blur-md transition-all group cursor-pointer hover:bg-earth-900/90 active:scale-95"
+            title="Dhara Heritage Passports"
+          >
+            <ShieldCheck className="w-4 h-4 text-gold-400 group-hover:scale-110 transition-transform" />
+            <div className="flex items-baseline gap-1">
+              <span suppressHydrationWarning className="font-mono text-sm sm:text-base font-bold text-gold-300">
+                {unlockedPassportsCount}
+              </span>
+              <span className="text-[10px] font-serif uppercase tracking-wider text-parchment-400">
+                / {CITIES_DATA.length}
+              </span>
+              <span className="text-[10px] font-serif uppercase tracking-wider text-parchment-400 hidden md:inline">
+                Passports
+              </span>
+            </div>
+          </button>
+
           {/* Level & XP Gauge */}
-          <div className="flex flex-col bg-earth-950/85 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border border-gold-500/30 shadow-md min-w-[140px] sm:min-w-[180px]">
+          <div className="flex flex-col bg-earth-950/85 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border border-gold-500/30 shadow-md min-w-[130px] sm:min-w-[170px]">
             <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-parchment-300">
               <span suppressHydrationWarning className="text-gold-400 font-serif font-bold flex items-center gap-1">
                 <Trophy className="w-3 h-3 text-gold-400" />
@@ -101,7 +135,7 @@ export default function WorldHUD() {
             {currentCityId && (
               <button
                 onClick={handleReturnToWorld}
-                className="px-3 py-1.5 rounded-xl border border-gold-500/30 bg-earth-950/80 text-parchment-200 hover:bg-gold-500 hover:text-earth-950 text-xs font-serif font-bold uppercase tracking-wider transition-all backdrop-blur-md shadow"
+                className="px-3 py-1.5 rounded-xl border border-gold-500/30 bg-earth-950/80 text-parchment-200 hover:bg-gold-500 hover:text-earth-950 text-xs font-serif font-bold uppercase tracking-wider transition-all backdrop-blur-md shadow cursor-pointer"
               >
                 World
               </button>
@@ -109,8 +143,8 @@ export default function WorldHUD() {
 
             <Link href="/profile">
               <button
-                className="p-2 rounded-xl border border-gold-500/30 bg-earth-950/80 text-parchment-200 hover:border-gold-400 hover:text-gold-300 transition-all backdrop-blur-md shadow"
-                title="Player Profile"
+                className="p-2 rounded-xl border border-gold-500/30 bg-earth-950/80 text-parchment-300 hover:text-gold-300 hover:border-gold-400 transition-all backdrop-blur-md shadow cursor-pointer"
+                title="Scholar Profile"
               >
                 <User className="w-4 h-4" />
               </button>
@@ -118,7 +152,7 @@ export default function WorldHUD() {
 
             <Link href="/settings">
               <button
-                className="p-2 rounded-xl border border-gold-500/30 bg-earth-950/80 text-parchment-200 hover:border-gold-400 hover:text-gold-300 transition-all backdrop-blur-md shadow"
+                className="p-2 rounded-xl border border-gold-500/30 bg-earth-950/80 text-parchment-300 hover:text-gold-300 hover:border-gold-400 transition-all backdrop-blur-md shadow cursor-pointer"
                 title="Settings"
               >
                 <SettingsIcon className="w-4 h-4" />
@@ -151,11 +185,20 @@ export default function WorldHUD() {
             </div>
             <button
               onClick={dismissLevelUp}
-              className="px-4 py-1.5 bg-gold-500 text-earth-950 rounded-xl font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow transition-all"
+              className="px-4 py-1.5 bg-gold-500 text-earth-950 rounded-xl font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow transition-all cursor-pointer"
             >
               Claim Honor
             </button>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Heritage Passport Modal */}
+      <AnimatePresence>
+        {showPassport && (
+          <div className="pointer-events-auto">
+            <PassportModal onClose={() => setShowPassport(false)} />
+          </div>
         )}
       </AnimatePresence>
     </header>

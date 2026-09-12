@@ -133,6 +133,8 @@ export interface DharaState {
   // Authoritative Getters
   getTotalStars: () => number;
   isCityUnlocked: (cityId: string) => boolean;
+  isCityPassportUnlocked: (cityId: string) => boolean;
+  getUnlockedPassportsCount: () => number;
   getChapterState: (chapterId: string) => ChapterProgress;
 
   // Primary Game Actions
@@ -258,6 +260,21 @@ export const useGameStore = create<DharaState>()(
         if (!city) return false;
         const totalStars = get().getTotalStars();
         return totalStars >= city.requiredStars;
+      },
+
+      // A city's permanent passport is granted when all chapters are completed with 3 stars (all stars of realm gained)
+      isCityPassportUnlocked: (cityId: string) => {
+        const { chapterProgress } = get();
+        const city = CITIES_DATA.find((c) => c.id === cityId);
+        if (!city) return false;
+        return city.chapters.every(
+          (ch) => chapterProgress[ch.id]?.completed && chapterProgress[ch.id]?.stars === 3
+        );
+      },
+
+      getUnlockedPassportsCount: () => {
+        const { isCityPassportUnlocked } = get();
+        return CITIES_DATA.filter((c) => isCityPassportUnlocked(c.id)).length;
       },
 
       getChapterState: (chapterId: string) => {

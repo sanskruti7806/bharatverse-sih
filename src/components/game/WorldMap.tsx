@@ -145,7 +145,7 @@ export default function WorldMap() {
           <div className="w-full">
             <div
               ref={scrollContainerRef}
-              className="flex items-center gap-6 overflow-x-auto snap-x snap-mandatory py-6 px-4 sm:px-8 xl:justify-center scrollbar-none"
+              className="flex items-center gap-6 overflow-x-auto snap-x snap-mandatory py-6 px-6 sm:px-12 md:px-16 scrollbar-none"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
               {CITIES_DATA.map((city) => {
@@ -160,7 +160,7 @@ export default function WorldMap() {
                 ).length;
 
                 return (
-                  <div key={city.id} className="snap-center shrink-0">
+                  <div key={city.id} className="snap-start shrink-0">
                     <CityVerticalCard
                       city={city}
                       isUnlocked={unlocked}
@@ -177,9 +177,9 @@ export default function WorldMap() {
               })}
             </div>
 
-            {/* Mobile Swipe Hint */}
-            <div className="flex sm:hidden justify-center items-center gap-2 text-[11px] font-mono text-parchment-400/70 pt-1">
-              <span>← Swipe to explore all ancient cities →</span>
+            {/* Mobile / Desktop Scroll Indicator Hint */}
+            <div className="flex justify-center items-center gap-2 text-[11px] font-mono text-parchment-400/70 pt-1">
+              <span>← Scroll or use arrows to view all 5 ancient realms →</span>
             </div>
           </div>
         ) : (
