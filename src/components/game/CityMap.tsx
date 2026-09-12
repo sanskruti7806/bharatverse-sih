@@ -6,6 +6,7 @@ import { CITIES_DATA, Chapter } from "@/data/gameContent";
 import ChapterNode from "./ChapterNode";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Star, Lock, X, Trophy } from "lucide-react";
+import Image from "next/image";
 
 interface CityMapProps {
   cityId: string;
@@ -52,12 +53,25 @@ export default function CityMap({ cityId }: CityMapProps) {
   };
 
   return (
-    <div className="relative w-full h-screen bg-[#0d0a08] overflow-hidden select-none">
-      {/* Ambient background with warm parchment / terracotta tones */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(44,26,18,0.75)_0%,_#090705_85%)]" />
+    <div className="relative w-full h-screen bg-[#070504] overflow-hidden select-none">
+      {/* ── RICH ANCIENT SANCTUARY BACKGROUND (NOT A MAP) ── */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <Image
+          src="/ancient_temple_bg.jpg"
+          alt="Ancient Realm Sanctuary"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center opacity-40 filter contrast-125 brightness-75 scale-105 transition-transform duration-1000"
+        />
+        {/* Warm golden-terracotta glow & radial atmospheric shadow */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(60,32,16,0.5)_0%,_#070504_85%)] mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#070504] via-transparent to-[#070504]/90" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#070504]/80 via-transparent to-[#070504]/80" />
+      </div>
 
-      {/* Decorative city grid & watermark */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:36px_36px]" />
+      {/* Subtle sacred geometry & ancient constellation watermark */}
+      <div className="absolute inset-0 opacity-15 pointer-events-none bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:40px_40px]" />
 
       {/* City Header Navigation Bar */}
       <div className="absolute top-20 inset-x-0 z-30 px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-3 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
@@ -102,9 +116,13 @@ export default function CityMap({ cityId }: CityMapProps) {
       <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
         <defs>
           <linearGradient id="unlockedPath" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgba(212, 175, 55, 0.7)" />
-            <stop offset="100%" stopColor="rgba(212, 175, 55, 0.3)" />
+            <stop offset="0%" stopColor="rgba(212, 175, 55, 0.85)" />
+            <stop offset="100%" stopColor="rgba(212, 175, 55, 0.45)" />
           </linearGradient>
+          <filter id="pathGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
         </defs>
 
         {city.chapters.map((ch, idx) => {
@@ -116,22 +134,35 @@ export default function CityMap({ cityId }: CityMapProps) {
           const isPathActive = !currProgress.completed && currProgress.status === "unlocked";
 
           return (
-            <line
-              key={`path-${ch.id}-${nextCh.id}`}
-              x1={`${ch.coordinates.x}%`}
-              y1={`${ch.coordinates.y}%`}
-              x2={`${nextCh.coordinates.x}%`}
-              y2={`${nextCh.coordinates.y}%`}
-              stroke={
-                isPathCompleted
-                  ? "url(#unlockedPath)"
-                  : isPathActive
-                  ? "rgba(212, 175, 55, 0.4)"
-                  : "rgba(100, 90, 80, 0.25)"
-              }
-              strokeWidth={isPathCompleted ? "3" : "2"}
-              strokeDasharray={isPathCompleted ? undefined : "6 6"}
-            />
+            <g key={`path-${ch.id}-${nextCh.id}`}>
+              {/* Outer soft ambient halo */}
+              {(isPathCompleted || isPathActive) && (
+                <line
+                  x1={`${ch.coordinates.x}%`}
+                  y1={`${ch.coordinates.y}%`}
+                  x2={`${nextCh.coordinates.x}%`}
+                  y2={`${nextCh.coordinates.y}%`}
+                  stroke="rgba(212, 175, 55, 0.3)"
+                  strokeWidth="6"
+                  filter="url(#pathGlow)"
+                />
+              )}
+              <line
+                x1={`${ch.coordinates.x}%`}
+                y1={`${ch.coordinates.y}%`}
+                x2={`${nextCh.coordinates.x}%`}
+                y2={`${nextCh.coordinates.y}%`}
+                stroke={
+                  isPathCompleted
+                    ? "url(#unlockedPath)"
+                    : isPathActive
+                    ? "rgba(212, 175, 55, 0.6)"
+                    : "rgba(120, 100, 80, 0.2)"
+                }
+                strokeWidth={isPathCompleted ? "3.5" : "2"}
+                strokeDasharray={isPathCompleted ? undefined : "6 6"}
+              />
+            </g>
           );
         })}
       </svg>
@@ -143,6 +174,7 @@ export default function CityMap({ cityId }: CityMapProps) {
           const prevChapter = idx > 0 ? city.chapters[idx - 1] : null;
           const isCurrent =
             progress.status === "unlocked" &&
+            !progress.completed &&
             (!prevChapter || getChapterState(prevChapter.id).completed);
 
           return (
