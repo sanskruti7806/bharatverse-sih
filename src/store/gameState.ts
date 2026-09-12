@@ -126,6 +126,7 @@ export interface DharaState {
   chapterProgress: Record<string, ChapterProgress>;
   currentCityId: string | null;
   currentChapterId: string | null;
+  enteringCityId: string | null;
 
   levelUpNotification: { oldLevel: number; newLevel: number; title: string } | null;
   dismissLevelUp: () => void;
@@ -138,6 +139,9 @@ export interface DharaState {
   getChapterState: (chapterId: string) => ChapterProgress;
 
   // Primary Game Actions
+  startEnterRealm: (cityId: string) => void;
+  confirmEnterRealm: () => void;
+  cancelEnterRealm: () => void;
   enterCity: (cityId: string | null) => void;
   enterChapter: (chapterId: string | null) => void;
   submitPuzzleAnswer: (chapterId: string, puzzleId: string, isCorrect: boolean) => { xpAwarded: number };
@@ -242,6 +246,7 @@ export const useGameStore = create<DharaState>()(
       chapterProgress: getInitialChapterProgress(),
       currentCityId: null,
       currentChapterId: null,
+      enteringCityId: null,
       levelUpNotification: null,
 
       dismissLevelUp: () => set({ levelUpNotification: null }),
@@ -278,9 +283,29 @@ export const useGameStore = create<DharaState>()(
       },
 
       getChapterState: (chapterId: string) => {
-        const { chapterProgress } = get();
+        const { chapterProgress, isCityUnlocked } = get();
+        const existing = chapterProgress[chapterId];
+
+        // Rule: When a realm is unlocked, its first chapter MUST also be unlocked
+        const city = CITIES_DATA.find((c) => c.chapters.some((ch) => ch.id === chapterId));
+        const isFirstChapter = city?.chapters[0]?.id === chapterId;
+
+        if (city && isCityUnlocked(city.id) && isFirstChapter) {
+          if (!existing || existing.status === 'locked') {
+            return {
+              status: existing?.completed ? 'completed' : 'unlocked',
+              completed: existing?.completed || false,
+              correctAnswers: existing?.correctAnswers || 0,
+              totalQuestions: city.chapters[0].puzzles.length,
+              stars: existing?.stars || 0,
+              xpEarned: existing?.xpEarned || 0,
+              solvedPuzzleIds: existing?.solvedPuzzleIds || [],
+            };
+          }
+        }
+
         return (
-          chapterProgress[chapterId] || {
+          existing || {
             status: 'locked',
             completed: false,
             correctAnswers: 0,
@@ -292,7 +317,53 @@ export const useGameStore = create<DharaState>()(
         );
       },
 
-      enterCity: (cityId) => set({ currentCityId: cityId, currentChapterId: null }),
+      startEnterRealm: (cityId) => set({ enteringCityId: cityId }),
+
+      confirmEnterRealm: () => {
+        const { enteringCityId, enterCity } = get();
+        if (enteringCityId) {
+          enterCity(enteringCityId);
+          set({ enteringCityId: null });
+        }
+      },
+
+      cancelEnterRealm: () => set({ enteringCityId: null }),
+
+      enterCity: (cityId) => {
+        if (cityId) {
+          const city = CITIES_DATA.find((c) => c.id === cityId);
+          const firstChapter = city?.chapters[0];
+          if (firstChapter) {
+            set((s) => {
+              const currentFirst = s.chapterProgress[firstChapter.id];
+              if (!currentFirst || currentFirst.status === 'locked') {
+                return {
+                  currentCityId: cityId,
+                  currentChapterId: null,
+                  chapterProgress: {
+                    ...s.chapterProgress,
+                    [firstChapter.id]: {
+                      ...(currentFirst || {
+                        completed: false,
+                        correctAnswers: 0,
+                        totalQuestions: firstChapter.puzzles.length,
+                        stars: 0,
+                        xpEarned: 0,
+                        solvedPuzzleIds: [],
+                      }),
+                      status: 'unlocked',
+                    },
+                  },
+                };
+              }
+              return { currentCityId: cityId, currentChapterId: null };
+            });
+            return;
+          }
+        }
+        set({ currentCityId: cityId, currentChapterId: null });
+      },
+
       enterChapter: (chapterId) => set({ currentChapterId: chapterId }),
 
       // Submitting an answer during a puzzle run
@@ -367,13 +438,30 @@ export const useGameStore = create<DharaState>()(
           },
         };
 
-        // Unlock next chapter if it was locked
+        // Unlock next chapter in this realm if it was locked
         if (nextChapterId && updatedProgress[nextChapterId]?.status === 'locked') {
           updatedProgress[nextChapterId] = {
             ...updatedProgress[nextChapterId],
             status: 'unlocked',
           };
         }
+
+        // Rule: When global stars increase, check all realms and auto-unlock chapter 1 for newly unlocked realms
+        const updatedTotalStars = Object.values(updatedProgress).reduce((acc, curr) => {
+          return acc + (curr.completed ? curr.stars : 0);
+        }, 0);
+
+        CITIES_DATA.forEach((c) => {
+          if (updatedTotalStars >= c.requiredStars && c.chapters.length > 0) {
+            const firstChId = c.chapters[0].id;
+            if (updatedProgress[firstChId]?.status === 'locked') {
+              updatedProgress[firstChId] = {
+                ...updatedProgress[firstChId],
+                status: 'unlocked',
+              };
+            }
+          }
+        });
 
         set({ chapterProgress: updatedProgress });
 

@@ -8,9 +8,15 @@ import WorldHUD from "@/components/game/WorldHUD";
 import WorldMap from "@/components/game/WorldMap";
 import CityMap from "@/components/game/CityMap";
 import ChapterView from "@/components/game/ChapterView";
+import RealmEntranceAnimation from "@/components/game/RealmEntranceAnimation";
 
 export default function GameRoot() {
-  const { currentCityId, currentChapterId } = useGameStore();
+  const {
+    currentCityId,
+    currentChapterId,
+    enteringCityId,
+    confirmEnterRealm,
+  } = useGameStore();
   const [hasEntered, setHasEntered] = useState(false);
   const [introStep, setIntroStep] = useState(0);
 
@@ -128,6 +134,15 @@ export default function GameRoot() {
           <WorldMap />
         )}
       </main>
+
+      {/* Cinematic AAA-game inspired Realm Entrance Animation */}
+      {enteringCityId && (
+        <RealmEntranceAnimation
+          cityId={enteringCityId}
+          onComplete={confirmEnterRealm}
+          onSkip={confirmEnterRealm}
+        />
+      )}
     </motion.div>
   );
 }

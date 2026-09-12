@@ -16,19 +16,19 @@ interface ChapterNodeProps {
 
 // Curated authentic cultural photographs representing each chapter location
 const CHAPTER_PHOTOS: Record<string, string> = {
-  // Pataliputra
+  // Pataliputra (Mauryan & Gupta Era, 4th BCE - 5th CE)
   "pataliputra-ch1": "/chapter_torana.jpg",
-  "pataliputra-ch2": "https://images.unsplash.com/photo-1596178060671-7a80dc8059ea?w=400&q=80",
-  "pataliputra-ch3": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&q=80",
-  "pataliputra-ch4": "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=400&q=80",
-  "pataliputra-ch5": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=400&q=80",
+  "pataliputra-ch2": "/pataliputra_ch2.jpg",
+  "pataliputra-ch3": "/pataliputra_ch3.jpg",
+  "pataliputra-ch4": "/pataliputra_ch4.jpg",
+  "pataliputra-ch5": "/pataliputra_ch5.jpg",
 
-  // Hampi
-  "hampi-ch1": "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=400&q=80",
-  "hampi-ch2": "https://images.unsplash.com/photo-1600100397608-f010f443b71c?w=400&q=80",
-  "hampi-ch3": "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=400&q=80",
-  "hampi-ch4": "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=400&q=80",
-  "hampi-ch5": "https://images.unsplash.com/photo-1548013146-72479768bada?w=400&q=80",
+  // Hampi (Vijayanagara Empire, 14th - 16th Century CE)
+  "hampi-ch1": "/hampi_ch1.jpg",
+  "hampi-ch2": "/hampi_ch2.jpg",
+  "hampi-ch3": "/hampi_ch3.jpg",
+  "hampi-ch4": "/hampi_ch4.jpg",
+  "hampi-ch5": "/hampi_ch5.jpg",
 
   // Varanasi
   "varanasi-ch1": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=400&q=80",
@@ -85,14 +85,14 @@ export default function ChapterNode({
       animate={
         isOngoing
           ? {
-              scale: [1, 1.08, 0.99, 1.05, 1],
-              y: [0, -6, 1, -3, 0],
-              transition: {
-                repeat: Infinity,
-                duration: 2.2,
-                ease: "easeInOut",
-              },
-            }
+            scale: [1, 1.08, 0.99, 1.05, 1],
+            y: [0, -6, 1, -3, 0],
+            transition: {
+              repeat: Infinity,
+              duration: 2.2,
+              ease: "easeInOut",
+            },
+          }
           : { scale: 1, y: 0 }
       }
       whileHover={{ scale: isLocked ? 1.02 : 1.1 }}
@@ -105,13 +105,12 @@ export default function ChapterNode({
           <div className="relative mb-2 flex flex-col items-center">
             {/* Thumbnail Frame */}
             <div
-              className={`relative w-20 h-14 sm:w-24 sm:h-16 rounded-2xl overflow-hidden border-2 shadow-xl transition-all duration-300 ${
-                isCompleted
-                  ? "border-gold-400/80 shadow-[0_0_20px_rgba(212,175,55,0.4)]"
-                  : isOngoing
+              className={`relative w-20 h-14 sm:w-24 sm:h-16 rounded-2xl overflow-hidden border-2 shadow-xl transition-all duration-300 ${isCompleted
+                ? "border-gold-400/80 shadow-[0_0_20px_rgba(212,175,55,0.4)]"
+                : isOngoing
                   ? "border-gold-300 shadow-[0_0_25px_rgba(212,175,55,0.7)]"
                   : "border-gold-500/40"
-              }`}
+                }`}
             >
               <Image
                 src={photoUrl}
@@ -162,15 +161,14 @@ export default function ChapterNode({
         {/* ── CHAPTER NUMBER & STATUS PILL (UNDER PHOTO) ── */}
         <div className="relative flex flex-col items-center">
           <div
-            className={`px-3 py-1 rounded-full flex items-center gap-1.5 shadow-lg border transition-all ${
-              isCompleted
-                ? "bg-earth-950/95 border-gold-400 text-gold-300 shadow-[0_0_15px_rgba(212,175,55,0.3)]"
-                : isOngoing
+            className={`px-3 py-1 rounded-full flex items-center gap-1.5 shadow-lg border transition-all ${isCompleted
+              ? "bg-earth-950/95 border-gold-400 text-gold-300 shadow-[0_0_15px_rgba(212,175,55,0.3)]"
+              : isOngoing
                 ? "bg-gradient-to-r from-gold-500 to-gold-600 text-earth-950 font-bold border-gold-300 shadow-[0_0_20px_rgba(212,175,55,0.6)]"
                 : !isLocked
-                ? "bg-earth-900/90 border-gold-500/40 text-gold-300"
-                : "bg-stone-900/90 border-stone-700 text-stone-500"
-            }`}
+                  ? "bg-earth-900/90 border-gold-500/40 text-gold-300"
+                  : "bg-stone-900/90 border-stone-700 text-stone-500"
+              }`}
           >
             {isOngoing && <Play className="w-3 h-3 fill-earth-950 text-earth-950" />}
             <span className="font-serif text-xs font-bold uppercase tracking-wider">
@@ -184,11 +182,10 @@ export default function ChapterNode({
               {[1, 2, 3].map((starIdx) => (
                 <Star
                   key={starIdx}
-                  className={`w-2.5 h-2.5 ${
-                    starIdx <= starsEarned
-                      ? "fill-gold-400 text-gold-400"
-                      : "text-earth-700 fill-earth-900"
-                  }`}
+                  className={`w-2.5 h-2.5 ${starIdx <= starsEarned
+                    ? "fill-gold-400 text-gold-400"
+                    : "text-earth-700 fill-earth-900"
+                    }`}
                 />
               ))}
             </div>
@@ -197,15 +194,14 @@ export default function ChapterNode({
 
         {/* ── CHAPTER LOCATION NAME BANNER ── */}
         <div
-          className={`mt-2 px-3 py-1 rounded-xl text-center backdrop-blur-md shadow-lg border transition-all max-w-[160px] sm:max-w-[200px] ${
-            isCompleted
-              ? "bg-earth-950/90 border-gold-500/40 text-parchment-200"
-              : isOngoing
+          className={`mt-2 px-3 py-1 rounded-xl text-center backdrop-blur-md shadow-lg border transition-all max-w-[160px] sm:max-w-[200px] ${isCompleted
+            ? "bg-earth-950/90 border-gold-500/40 text-parchment-200"
+            : isOngoing
               ? "bg-earth-950/95 border-gold-400 text-gold-300 shadow-[0_0_20px_rgba(212,175,55,0.4)]"
               : !isLocked
-              ? "bg-earth-950/90 border-gold-500/30 text-parchment-300"
-              : "bg-stone-950/85 border-stone-800 text-stone-500"
-          }`}
+                ? "bg-earth-950/90 border-gold-500/30 text-parchment-300"
+                : "bg-stone-950/85 border-stone-800 text-stone-500"
+            }`}
         >
           <div className="font-serif text-[11px] sm:text-xs font-bold tracking-wide truncate">
             {isLocked ? "Uncharted Location" : chapter.locationName}

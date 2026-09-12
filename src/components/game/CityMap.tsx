@@ -5,7 +5,7 @@ import { useGameStore } from "@/store/gameState";
 import { CITIES_DATA, Chapter } from "@/data/gameContent";
 import ChapterNode from "./ChapterNode";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Star, Lock, X, Trophy } from "lucide-react";
+import { ArrowLeft, Star, Lock, X, Trophy, Sparkles } from "lucide-react";
 import Image from "next/image";
 
 interface CityMapProps {
@@ -13,7 +13,7 @@ interface CityMapProps {
 }
 
 export default function CityMap({ cityId }: CityMapProps) {
-  const { enterCity, enterChapter, chapterProgress, getChapterState } = useGameStore();
+  const { enterCity, enterChapter, chapterProgress, getChapterState, startEnterRealm } = useGameStore();
   const [lockedNotice, setLockedNotice] = useState<Chapter | null>(null);
 
   const city = CITIES_DATA.find((c) => c.id === cityId);
@@ -80,7 +80,7 @@ export default function CityMap({ cityId }: CityMapProps) {
         <div className="flex items-center gap-3 pointer-events-auto">
           <button
             onClick={() => enterCity(null)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-earth-950/80 border border-gold-500/40 text-parchment-200 hover:text-gold-300 hover:border-gold-400 text-xs font-serif font-bold uppercase tracking-wider transition-all backdrop-blur-md shadow-md"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-earth-950/80 border border-gold-500/40 text-parchment-200 hover:text-gold-300 hover:border-gold-400 text-xs font-serif font-bold uppercase tracking-wider transition-all backdrop-blur-md shadow-md cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 text-gold-400" />
             <span>World Map</span>
@@ -99,15 +99,26 @@ export default function CityMap({ cityId }: CityMapProps) {
           </div>
         </div>
 
-        {/* Right: City Star Progress */}
-        <div className="flex items-center gap-2 bg-earth-950/85 backdrop-blur-md px-4 py-2 rounded-2xl border border-gold-500/30 shadow-md pointer-events-auto">
-          <Star className="w-4 h-4 fill-gold-400 text-gold-400" />
-          <div className="text-xs font-mono text-gold-300 font-bold">
-            {starsEarnedInCity} / {maxPossibleStars} Stars
-          </div>
-          <div className="w-px h-3.5 bg-earth-800 mx-1" />
-          <div className="text-xs font-mono text-parchment-300">
-            {completedChaptersCount} / {totalChapters} Locations
+        {/* Right: Prologue Replay & City Star Progress */}
+        <div className="flex items-center gap-3 pointer-events-auto">
+          <button
+            onClick={() => startEnterRealm(city.id)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-earth-950/85 border border-gold-500/30 hover:border-gold-400 text-gold-300 hover:text-gold-200 text-xs font-serif tracking-wider uppercase transition-all backdrop-blur-md shadow-md cursor-pointer"
+            title="View Historical Vistas & Prologue"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+            <span className="hidden sm:inline">Prologue Vistas</span>
+          </button>
+
+          <div className="flex items-center gap-2 bg-earth-950/85 backdrop-blur-md px-4 py-2 rounded-2xl border border-gold-500/30 shadow-md">
+            <Star className="w-4 h-4 fill-gold-400 text-gold-400" />
+            <div className="text-xs font-mono text-gold-300 font-bold">
+              {starsEarnedInCity} / {maxPossibleStars} Stars
+            </div>
+            <div className="w-px h-3.5 bg-earth-800 mx-1" />
+            <div className="text-xs font-mono text-parchment-300">
+              {completedChaptersCount} / {totalChapters} Locations
+            </div>
           </div>
         </div>
       </div>

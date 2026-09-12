@@ -12,7 +12,7 @@ import { Lock, X, LayoutGrid, Map as MapIcon, ChevronLeft, ChevronRight, Star, S
 
 export default function WorldMap() {
   const mounted = useMounted();
-  const { isCityUnlocked, enterCity, chapterProgress, getTotalStars } = useGameStore();
+  const { isCityUnlocked, startEnterRealm, chapterProgress, getTotalStars } = useGameStore();
   const [lockedNotice, setLockedNotice] = useState<{ city: City; needed: number } | null>(null);
   const [viewMode, setViewMode] = useState<"cards" | "map">("cards");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -20,7 +20,7 @@ export default function WorldMap() {
   const totalGlobalStars = mounted ? getTotalStars() : 0;
 
   const handleSelectCity = (city: City) => {
-    enterCity(city.id);
+    startEnterRealm(city.id);
   };
 
   const handleLockedCity = (city: City) => {
